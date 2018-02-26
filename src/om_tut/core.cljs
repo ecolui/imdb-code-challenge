@@ -26,16 +26,7 @@
 (defn get-top-movies [year]
   nil  
   )
-
-(defn movie-year-input_obsolete [cursor owner]
-  (reify om/IRender
-    (render [_]
-    (dom/input #js {
-      :type "text"
-      :value 2000
-      :onChange (fn [e] (.log js/console (.-value (.-target e))))  ;;ajax here mutate global state
-    }))))
-
+  
 (defn movie-year-input [_ _]
   (reify om/IRender
     (render [_]
