@@ -26,10 +26,16 @@
 (defn get-all-movies [request-map]
   (response @movie-data))
 
+(defn get-movies-by-year [year]
+    (response (filter (fn [movie] (= (:year movie) year)) (:top-movies @movie-data)))    
+  )
+
+(defn str->int [str] (read-string str))
+
 (defroutes app
   (GET "/" request (wrap-json-response get-all-movies))
-  (Get "/:year" [year] (wrap-json-response )  )
-    )
+  (GET "/:year" [year] ((wrap-json-response get-movies-by-year) (str->int year)))
+)
 
 (def cors-enabled-routes
     (wrap-cors #'app 
