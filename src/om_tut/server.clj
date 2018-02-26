@@ -1,18 +1,12 @@
 (ns om-tut.server
     (:require 
-;;        [bidi.bidi :as bidi]
-;;        [bidi.ring]
-;;        [schema.core :as s]
         [ring.adapter.jetty :as jetty]
         [ring.middleware.json :refer [wrap-json-response]]
         [ring.util.response :refer [response]]
         [ring.middleware.cors :refer [wrap-cors]]
         [compojure.route]        
         [compojure.core :refer [GET PUT POST defroutes]]
-;;        [cognitect.transit :as transit])
-;;    (:import [java.io ByteArrayInputStream ByteArrayOutputStream])
     )
-;;    (use '[compojure.core :only (GET PUT POST defroutes)])
 )
 
 (defonce movie-data 
@@ -29,18 +23,6 @@
     }
     ))
 
-;;Use Cognitects standardized serialization format
-;;(defn to-transit [x]
-;;    (let [baos (ByteArrayOutputStream. 4096)
-;;          writer (transit/write boas :json {})]
-;;      (transit/write writer x)
-;;      (.toString boas)))
-
-;;(defn from-transit [x]
-;;    (let [bais (ByteArrayInputStream. (.getBytes s "UTF-8"))
-;;          reader (transit/reader bais :json)]
-;;      (transit/read reader)))
-
 (def enable-cors {
     "Access-Control-Allow-Origin" "*"
     "Access-Control-Allow-Methods" "GET, POST, OPTIONS"
@@ -50,71 +32,26 @@
 
 (defn with-cors [resp] (update-in resp [:headers] merge enable-cors))
 
-
-;;(defn transit-response [resp]
-;;    {:pre [(map? resp)]}
-;;    (-> resp
-;;        (update-in [:headers "Content-Type"] 
-;;            #(or % "application/transit+json; charset=UTF-8"))
-;;        (update-in [:status]
-;;            #(or % 200))
-;;        (update-in [:body] (fn [body] (str (to-transit body))))
-;;        (with-cors))
-;;  )
-
-;;(defn get-movies [{:keys [route-params] :as req}]
-;;  (transit-response {:body })
-;;    )
-
-;;(def routes ["/" {
-;;    "movies" {:get get-movies}   
-;;}])
-
-;;(defn handler [req]
-;;    (let [resp ((bidi.ring/make-handler routes) req)]
-;;      (println (:request-method req) (:uri req) "->" (:status resp))
-;;      resp))
-
 (defn handler [request-map]
-  (response
-;;    {:movies {:year 2005 :title "Coming to America"}}
-    @movie-data
-
-
-;;  {:status 200
-;;   :headers {"Content-Type" "application/json"}
-;;   :body {:movies {:year 2005 :title "Coming to America"}}}
-
-;;   :headers {"Content-Type" "text"}
-;;   :body "hi world"}
-    )
+  (response @movie-data)
   )
 
 (defn handler-with-cors [request-map]
-;;    (wrap-json-response (with-cors (handler request-map)))
-;;    (wrap-json-response (handler request-map))
-;;        (handler request-map)
     (wrap-json-response handler)
   )
 
 (defroutes app
-;;  (GET "/" request "Welcome!")
   (GET "/" request (handler-with-cors request))
     )
 
 (def cors-enabled-routes
     (wrap-cors #'app :access-control-allow-origin [#".*"]
-;;        :access-control-allow-headers ["Origin" "X-Requested-With"
-;;                                                          "Content-Type" "Accept"]
                        :access-control-allow-methods [:get :put :post :delete])
     )
 
 (defn start-server []
-;;  (jetty/run-jetty #'handler-with-cors {:port 8080 :host "0.0.0.0" :join? false})
-;;  (jetty/run-jetty #'app {:port 8080 :host "0.0.0.0" :join? false})
   (jetty/run-jetty #'cors-enabled-routes {:port 8080 :host "0.0.0.0" :join? false})
     )
-
 
 ;;lein repl
 ;;(load-file "src/om_tut/server.clj")
