@@ -32,17 +32,14 @@
     (render [_]
       (dom/select #js {
                     :onChange (fn [e] 
-                      (do
-;;                        (ajax/GET (str api-server) {:handler (fn [resp] (.log js/console resp ))})
-                        (ajax/GET (str api-server) 
-                          {:handler (fn [resp] (reset! app-state resp ))
-                             :response-format :json
-                             :keywords? true
+                      (let [year (.-value (.-target e))]
+                        (ajax/GET (str api-server "/" year) 
+                          {:handler (fn [movies] (swap! app-state assoc-in [:top-movies] movies))
+                           :response-format :json
+                           :keywords? true
                           })
-                        (.log js/console (.-value (.-target e)))                        
-                      )
-                      )
-                  }
+                        (.log js/console year)                        
+                      ))}
         (map (fn [year] (dom/option #js {:key (str year "_dd")} year)) 
              (range 2000 2017))
         ))))
