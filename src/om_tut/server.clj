@@ -23,38 +23,22 @@
     }
     ))
 
-(def enable-cors {
-    "Access-Control-Allow-Origin" "*"
-    "Access-Control-Allow-Methods" "GET, POST, OPTIONS"
-    "Access-Control-Allow-Headers" "Content-Type"
-    "Access-Control-Max-Age" "31536000"
-})
-
-(defn with-cors [resp] (update-in resp [:headers] merge enable-cors))
-
-(defn handler [request-map]
-  (response @movie-data)
-  )
-
-(defn handler-with-cors [request-map]
-    (wrap-json-response handler)
-  )
+(defn get-all-movies [request-map]
+  (response @movie-data))
 
 (defroutes app
-  (GET "/" request (handler-with-cors request))
+  (GET "/" request (wrap-json-response get-all-movies))
+  (Get "/:year" [year] (wrap-json-response )  )
     )
 
 (def cors-enabled-routes
-    (wrap-cors #'app :access-control-allow-origin [#".*"]
-                       :access-control-allow-methods [:get :put :post :delete])
+    (wrap-cors #'app 
+        :access-control-allow-origin [#".*"]
+        :access-control-allow-methods [:get :put :post :delete])
     )
 
 (defn start-server []
   (jetty/run-jetty #'cors-enabled-routes {:port 8080 :host "0.0.0.0" :join? false})
     )
 
-;;lein repl
-;;(load-file "src/om_tut/server.clj")
-;;(require '[om-tut.server :as server])
-;;(def jetty (om-tut.server/start-server))
 
