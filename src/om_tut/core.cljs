@@ -26,7 +26,7 @@
 (defn get-top-movies [year]
   nil  
   )
-  
+
 (defn movie-year-input [_ _]
   (reify om/IRender
     (render [_]
@@ -46,13 +46,6 @@
         (map (fn [year] (dom/option #js {:key (str year "_dd")} year)) 
              (range 2000 2017))
         ))))
-
-
-;;    (dom/input #js {
-;;      :type "text"
-;;      :value 2001
-;;      :onChange (fn [e] (.log js/console (.-value (.-target e))))  ;;ajax here mutate global state
-;;    }))))
 
 (defn movie [cursor owner] 
   (reify om/IRender
