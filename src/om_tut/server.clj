@@ -20,16 +20,22 @@
   )
 
 (defn search-actors [actor-name]
-    (do
-        (doall (println "The NAME IS " actor-name))
-        (println "getting atom")
-        (println (count @actor-data))
-        (println "done")
-        (println (count @actor-data))
-        (println "done on retry")
-        (response (filter (fn [actor] (.contains (:name actor) actor-name) ) @actor-data))
-    )
+    (response (filter (fn [actor] (.contains (:name actor) actor-name) ) @actor-data))
   )
+
+(defn get-cast [movieId]
+        (response
+            (filter (fn [actor]
+                    (cond
+                        (= (:topmovie1 actor) movieId) true
+                        (= (:topmovie2 actor) movieId) true
+                        (= (:topmovie3 actor) movieId) true                                                     
+                        (= (:topmovie4 actor) movieId) true
+                        :else false
+                        )
+                    ) 
+                    @actor-data)
+        ))
 
 (defn str->int [str] (read-string str))
 
@@ -37,8 +43,9 @@
   (GET "/" request (wrap-json-response get-all-movies))
   (GET "/:year" [year] ((wrap-json-response get-movies-by-year) (str->int year)))
   (GET "/actorsearch/:name" [name] ((wrap-json-response search-actors) name) )
+  (GET "/cast/:movieId" [movieId] ((wrap-json-response get-cast) movieId) )
   ;;(GET "/movie/cast/:movieId")
-)
+  )
 
 (def cors-enabled-routes
     (wrap-cors #'app 
