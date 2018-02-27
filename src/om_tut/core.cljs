@@ -2,7 +2,13 @@
     (:require [om.core :as om :include-macros true]
               [om.dom :as dom :include-macros true]
               [ajax.core :as ajax]
-              ))
+              [goog.string :as gstring]
+              [goog.string.format]
+              [goog.i18n.NumberFormat.Format]
+              )
+              (:import
+                (goog.i18n NumberFormat)
+                (goog.i18n.NumberFormat Format)))
 
 (enable-console-print!)
 (println "Console printing is enabled")
@@ -15,6 +21,13 @@
       :welcome-msg "Welcome to the top movies"
       :top-movies []
     }))
+
+;;number formatters
+(def nff
+  (NumberFormat. Format/DECIMAL))
+(defn- nf
+  [num]
+  (.format nff (str num)))
 
 (defn movie-year-input [_ _]
   (reify om/IRender
@@ -37,29 +50,38 @@
              (range 2000 2017))
         ))))
 
+
+
 (defn movie [cursor owner] 
   (reify om/IRender
     (render [this]       
-      (dom/div #js {:className "hiClass"} 
-        (dom/span #js {:className "col-md-2 danger"} (str "Rating:" (:avgRating cursor)))
-        (dom/span #js {:className "col-md-2 danger"} (str "Total Votes: " (:numVotes cursor)))
-        (dom/span nil (:title cursor))        
-        ))))
+      (dom/div #js {:className "row data-row"} 
+        (dom/input #js {:type "button" :className "btn btn-primary btn-sm col-md-1" :value "View Cast"})        
+        (dom/div #js {:className "col-md-1"} (str "Rating:" (gstring/format "%.2f" (:avgRating cursor)) ))
+        (dom/div #js {:className "col-md-2"} (str "Total Votes: " (nf (:numVotes cursor))))
+        (dom/div #js {:className "col-md-6"} (:title cursor))        
+        )
+        )))
 
 (defn movies-list [cursor owner]
   (reify om/IRender
     (render [this]
-      (dom/div nil ;;(:welcome-msg cursor)
+      (dom/div nil
         (om/build-all movie (:top-movies cursor) {:key :movieId})))))
 
 (om/root
   (fn [cursor owner]
     (reify om/IRender
       (render [_]
-        (dom/div nil
-          (dom/div nil "Select a Year to View the Top 100 Movies for that Year")
+        (dom/div #js {:className "main-page"}
+          (dom/h3 nil "Select a Year to View the Top 100 Movies for that Year")
           (om/build movie-year-input nil nil)
-          (om/build movies-list cursor nil)))))
+          (om/build movies-list cursor nil)
+          (dom/div #js {
+            :className (str " alert alert-danger " (if (< (count (:top-movies @app-state)) 100) "visible" "hidden"))
+            } 
+            (str "Only " (count (:top-movies @app-state)) " movies were selected. For a movie to qualify in this list, it must have at least 10,000 votes."))
+          ))))
   app-state
   {:target (. js/document (getElementById "app"))})
 
