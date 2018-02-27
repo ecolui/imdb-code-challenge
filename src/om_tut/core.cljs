@@ -93,6 +93,22 @@
       (dom/div nil
         (om/build-all movie (:top-movies cursor) {:key :movieId})))))
 
+(defn build-modal-componet []
+  (dom/div #js {:className "container"}
+    (dom/h2 nil "Small Modal")
+    (dom/input #js {:type "button" :value "Open Modal" :className "btn btn-info btn-lg" :data-target "#myModal" :data-toggle "modal"} )
+    (dom/div #js {:className "modal fade" :id "myModal" :role "dialog"}
+      (dom/div #js {:className "modal-dialog modal-md" }
+        (dom/div #js {:className "modal-content"}
+          (dom/div #js {:className "modal-header"}
+            (dom/input #js {:type "button" :className "close" :data-dismiss "modal" :value "X"})
+            (dom/h4 #js {:className "modal-title"} "Modal Header"))
+          (dom/div #js {:className "modal-body"} 
+            (dom/p nil "This is a medium modal"))
+          (dom/div #js {:className "modal-footer"}
+            (dom/input #js {:type "button" :className "btn btn-default" :data-dismiss "modal" :value "Close"}))))))
+  )
+
 (om/root
   (fn [cursor owner]
     (reify om/IRender
@@ -107,6 +123,7 @@
               (if (and (< (count (:top-movies @app-state)) 100) (not= (:selected-year @app-state) nil)) "visible" "hidden"))
             } 
             (str "Only " (count (:top-movies @app-state)) " movies were selected. For a movie to qualify in this list, it must have at least 10,000 votes."))
+          (build-modal-componet)
           ))))
   app-state
   {:target (. js/document (getElementById "app"))})
@@ -116,3 +133,4 @@
   ;; your application
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 )
+
