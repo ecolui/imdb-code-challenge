@@ -52,15 +52,36 @@
              (range 2000 2018))
         ))))
 
-(defn show-movie-cast [movie-id]
-  (log js/console (str "The movie id is " movie-id))
+(defn show-movie-cast [movie-id movie-title]
+  (do
+    (.log js/console (str "The movie id is " movie-id))
+    (.log js/console (str "The movie title is " movie-title))
+    (.log js/console (str "The movie uri is " (str api-server "/cast/" movie-id)))
+    (ajax/GET (str api-server "/cast/" movie-id) 
+      {:handler 
+        (fn [actors] 
+;;          (let [sorted-movies (take 100 (sort #(compare (:avgRating %2) (:avgRating %1)) movies))]
+;;            (swap! app-state assoc-in [:top-movies] sorted-movies)
+;;          )
+            (do
+              (.log js/console (str "Total Actors: " (count actors) ))
+              ;;map evaluated lazily - force it to execute via doall
+              (doall (map (fn [actor] (.log js/console (str (:name actor) " - " (:birth actor) ) ) ) actors))
+            )
+          )
+          :response-format :json
+          :keywords? true
+        }))
   )
 
 (defn movie [cursor owner] 
   (reify om/IRender
     (render [this]       
       (dom/div #js {:className "row data-row"} 
-        (dom/input #js {:type "button" :className "btn btn-primary btn-sm col-md-1" :value "View Cast"})        
+        (dom/input #js {:type "button" 
+          :onClick (fn [] (show-movie-cast (:movieId cursor) (:title cursor) ))
+          :className "btn btn-primary btn-sm col-md-1" 
+          :value "View Cast"})        
         (dom/div #js {:className "col-md-1"} (str "Rating:" (gstring/format "%.2f" (:avgRating cursor)) ))
         (dom/div #js {:className "col-md-2"} (str "Total Votes: " (nf (:numVotes cursor))))
         (dom/div #js {:className "col-md-6"} (:title cursor)))
