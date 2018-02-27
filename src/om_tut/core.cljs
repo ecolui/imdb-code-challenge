@@ -17,7 +17,8 @@
 
 (defonce app-state 
   (atom 
-    {
+    {      
+      :selected-year nil      
       :welcome-msg "Welcome to the top movies"
       :top-movies []
     }))
@@ -35,6 +36,7 @@
       (dom/select #js {
           :onChange (fn [e] 
             (let [year (.-value (.-target e))]
+              (swap! app-state assoc :selected-year year)
               (ajax/GET (str api-server "/" year) 
                 {:handler 
                 (fn [movies] 
@@ -47,10 +49,12 @@
               (.log js/console year)                        
             ))}
         (map (fn [year] (dom/option #js {:key (str year "_dd")} year)) 
-             (range 2000 2017))
+             (range 2000 2018))
         ))))
 
-
+(defn show-movie-cast [movie-id]
+  (log js/console (str "The movie id is " movie-id))
+  )
 
 (defn movie [cursor owner] 
   (reify om/IRender
@@ -59,8 +63,7 @@
         (dom/input #js {:type "button" :className "btn btn-primary btn-sm col-md-1" :value "View Cast"})        
         (dom/div #js {:className "col-md-1"} (str "Rating:" (gstring/format "%.2f" (:avgRating cursor)) ))
         (dom/div #js {:className "col-md-2"} (str "Total Votes: " (nf (:numVotes cursor))))
-        (dom/div #js {:className "col-md-6"} (:title cursor))        
-        )
+        (dom/div #js {:className "col-md-6"} (:title cursor)))
         )))
 
 (defn movies-list [cursor owner]
@@ -78,7 +81,9 @@
           (om/build movie-year-input nil nil)
           (om/build movies-list cursor nil)
           (dom/div #js {
-            :className (str " alert alert-danger " (if (< (count (:top-movies @app-state)) 100) "visible" "hidden"))
+            :className (str 
+              " alert alert-danger " 
+              (if (and (< (count (:top-movies @app-state)) 100) (not= (:selected-year @app-state) nil)) "visible" "hidden"))
             } 
             (str "Only " (count (:top-movies @app-state)) " movies were selected. For a movie to qualify in this list, it must have at least 10,000 votes."))
           ))))
