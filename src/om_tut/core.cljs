@@ -14,12 +14,7 @@
     {
       :welcome-msg "Welcome to the top movies"
       :top-movies []
-    }
-    ))
-
-(defn get-top-movies [year]
-  nil  
-  )
+    }))
 
 (defn movie-year-input [_ _]
   (reify om/IRender
