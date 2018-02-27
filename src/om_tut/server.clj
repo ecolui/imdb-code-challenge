@@ -14,7 +14,9 @@
   (response @movie-data))
 
 (defn get-movies-by-year [year]
+    (do
     (response (filter (fn [movie] (= (:year movie) year)) (:top-movies @movie-data)))    
+    )
   )
 
 (defn str->int [str] (read-string str))

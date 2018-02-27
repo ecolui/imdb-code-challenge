@@ -13,13 +13,7 @@
   (atom 
     {
       :welcome-msg "Welcome to the top movies"
-      :top-movies [
-          {:id 1 :year 2000 :title "Title 1 in 2000"}
-          {:id 2 :year 2000 :title "Title 2 in 2000"}
-          {:id 3 :year 2000 :title "Title 3 in 2000"}
-          {:id 4 :year 2001 :title "Title 1 in 2001"}
-          {:id 5 :year 2001 :title "Title 2 in 2001"}
-        ]
+      :top-movies []
     }
     ))
 
@@ -34,7 +28,11 @@
                     :onChange (fn [e] 
                       (let [year (.-value (.-target e))]
                         (ajax/GET (str api-server "/" year) 
-                          {:handler (fn [movies] (swap! app-state assoc-in [:top-movies] movies))
+                          {:handler 
+                          (fn [movies] 
+                            (let [sorted-movies (take 100 (sort #(compare (:avgRating %2) (:avgRating %1)) movies))]
+                              (swap! app-state assoc-in [:top-movies] sorted-movies)
+                            ))
                            :response-format :json
                            :keywords? true
                           })
@@ -47,21 +45,24 @@
 (defn movie [cursor owner] 
   (reify om/IRender
     (render [this]       
-      (dom/span #js {:className "hiClass"} 
-        (dom/div nil (:title cursor))
+      (dom/div #js {:className "hiClass"} 
+        (dom/span #js {:className "col-md-2 danger"} (str "Rating:" (:avgRating cursor)))
+        (dom/span #js {:className "col-md-2 danger"} (str "Total Votes: " (:numVotes cursor)))
+        (dom/span nil (:title cursor))        
         ))))
 
 (defn movies-list [cursor owner]
   (reify om/IRender
     (render [this]
-      (dom/div nil (:welcome-msg cursor)
-        (om/build-all movie (:top-movies cursor) {:key :id})))))
+      (dom/div nil ;;(:welcome-msg cursor)
+        (om/build-all movie (:top-movies cursor) {:key :movieId})))))
 
 (om/root
   (fn [cursor owner]
     (reify om/IRender
       (render [_]
         (dom/div nil
+          (dom/div nil "Select a Year to View the Top 100 Movies for that Year")
           (om/build movie-year-input nil nil)
           (om/build movies-list cursor nil)))))
   app-state
