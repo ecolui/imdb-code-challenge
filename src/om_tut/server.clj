@@ -6,7 +6,7 @@
         [ring.middleware.cors :refer [wrap-cors]]
         [compojure.route]        
         [compojure.core :refer [GET PUT POST defroutes]]
-        [om-tut.server-data :refer [movie-data]]
+        [om-tut.server-data :refer [movie-data actor-data]]
     )
 )
 
@@ -19,11 +19,25 @@
     )
   )
 
+(defn search-actors [actor-name]
+    (do
+        (doall (println "The NAME IS " actor-name))
+        (println "getting atom")
+        (println (count @actor-data))
+        (println "done")
+        (println (count @actor-data))
+        (println "done on retry")
+        (response (filter (fn [actor] (.contains (:name actor) actor-name) ) @actor-data))
+    )
+  )
+
 (defn str->int [str] (read-string str))
 
 (defroutes app
   (GET "/" request (wrap-json-response get-all-movies))
   (GET "/:year" [year] ((wrap-json-response get-movies-by-year) (str->int year)))
+  (GET "/actorsearch/:name" [name] ((wrap-json-response search-actors) name) )
+  ;;(GET "/movie/cast/:movieId")
 )
 
 (def cors-enabled-routes

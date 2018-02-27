@@ -25,19 +25,19 @@
   (reify om/IRender
     (render [_]
       (dom/select #js {
-                    :onChange (fn [e] 
-                      (let [year (.-value (.-target e))]
-                        (ajax/GET (str api-server "/" year) 
-                          {:handler 
-                          (fn [movies] 
-                            (let [sorted-movies (take 100 (sort #(compare (:avgRating %2) (:avgRating %1)) movies))]
-                              (swap! app-state assoc-in [:top-movies] sorted-movies)
-                            ))
-                           :response-format :json
-                           :keywords? true
-                          })
-                        (.log js/console year)                        
-                      ))}
+          :onChange (fn [e] 
+            (let [year (.-value (.-target e))]
+              (ajax/GET (str api-server "/" year) 
+                {:handler 
+                (fn [movies] 
+                  (let [sorted-movies (take 100 (sort #(compare (:avgRating %2) (:avgRating %1)) movies))]
+                    (swap! app-state assoc-in [:top-movies] sorted-movies)
+                  ))
+                  :response-format :json
+                  :keywords? true
+                })
+              (.log js/console year)                        
+            ))}
         (map (fn [year] (dom/option #js {:key (str year "_dd")} year)) 
              (range 2000 2017))
         ))))

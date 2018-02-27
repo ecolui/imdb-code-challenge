@@ -9,12 +9,12 @@
 
 ;;List contains only actors born after 1930 that are still alive.
 ;;Records with no birthyear are omitted from the cache
-(defonce actors
+(defonce actor-data
   (atom
     ;;NOTE: If the atom is empty, it could be that your
     ;;input is encoded as ANSI windows-1252.
     ;;(read-string (slurp "resources/public/imdb_data/actors.txt"))
-    nil
+    (read-string (slurp "resources/public/imdb_data/actors.txt"))
     )
   )
 
