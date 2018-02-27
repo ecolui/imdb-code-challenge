@@ -14,14 +14,10 @@
   (response @movie-data))
 
 (defn get-movies-by-year [year]
-    (do
-    (response (filter (fn [movie] (= (:year movie) year)) (:top-movies @movie-data)))    
-    )
-  )
+    (response (filter (fn [movie] (= (:year movie) year)) (:top-movies @movie-data))))
 
 (defn search-actors [actor-name]
-    (response (filter (fn [actor] (.contains (:name actor) actor-name) ) @actor-data))
-  )
+    (response (filter (fn [actor] (.contains (:name actor) actor-name) ) @actor-data)))
 
 (defn get-cast [movieId]
         (response
@@ -34,8 +30,7 @@
                         :else false
                         )
                     ) 
-                    @actor-data)
-        ))
+                    @actor-data)))
 
 (defn str->int [str] (read-string str))
 
@@ -43,18 +38,14 @@
   (GET "/" request (wrap-json-response get-all-movies))
   (GET "/:year" [year] ((wrap-json-response get-movies-by-year) (str->int year)))
   (GET "/actorsearch/:name" [name] ((wrap-json-response search-actors) name) )
-  (GET "/cast/:movieId" [movieId] ((wrap-json-response get-cast) movieId) )
-  ;;(GET "/movie/cast/:movieId")
-  )
+  (GET "/cast/:movieId" [movieId] ((wrap-json-response get-cast) movieId) ))
 
 (def cors-enabled-routes
     (wrap-cors #'app 
         :access-control-allow-origin [#".*"]
-        :access-control-allow-methods [:get :put :post :delete])
-    )
+        :access-control-allow-methods [:get :put :post :delete]))
 
 (defn start-server []
-  (jetty/run-jetty #'cors-enabled-routes {:port 8080 :host "0.0.0.0" :join? false})
-    )
+  (jetty/run-jetty #'cors-enabled-routes {:port 8080 :host "0.0.0.0" :join? false}))
 
 
