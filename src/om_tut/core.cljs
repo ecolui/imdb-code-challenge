@@ -22,6 +22,7 @@
       :selected-year nil      
       :welcome-msg "Welcome to the top movies of each year"
       :top-movies []
+      :actors []
     }))
 
 ;;number formatters
@@ -35,6 +36,7 @@
   (reify om/IRender
     (render [_]
       (dom/select #js {
+          :className "btn btn-lg btn-success"
           :onChange (fn [e] 
             (let [year (.-value (.-target e))]
               (swap! app-state assoc :selected-year year)
@@ -43,6 +45,8 @@
                 (fn [movies] 
                   (let [sorted-movies (take 100 (sort #(compare (:avgRating %2) (:avgRating %1)) movies))]
                     (swap! app-state assoc-in [:top-movies] sorted-movies)
+                                (.log js/console (first movies))
+
                   ))
                   :response-format :json
                   :keywords? true
@@ -113,6 +117,10 @@
             (dom/input #js {:type "button" :className "btn btn-default" :data-dismiss "modal" :value "Close"}))))))
   )
 
+(defn build-actor-typeahead-component []
+  (dom/div #js {:id "the-basics"}
+    (dom/input #js {:className "typeahead" :type "text" :placeholder "Actor Name"})))
+
 (om/root
   (fn [cursor owner]
     (reify om/IRender
@@ -127,7 +135,12 @@
               (if (and (< (count (:top-movies @app-state)) 100) (not= (:selected-year @app-state) nil)) "visible" "hidden"))
             } 
             (str "Only " (count (:top-movies @app-state)) " movies were selected. For a movie to qualify in this list, it must have at least 10,000 votes."))
+          (dom/h3 nil
+            "The Bonus!"
+            (dom/div nil "hi world")
+            )  
           (build-modal-componet)
+          (build-actor-typeahead-component)
           ))))
   app-state
   {:target (. js/document (getElementById "app"))})
@@ -138,3 +151,38 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 )
 
+(set! (.-onload js/window) 
+  (fn [] 
+    (do
+      (ajax/GET (str api-server "/actors/") 
+        {:handler (fn [actors] 
+            (do
+            (.log js/console (first actors))
+            (swap! app-state assoc-in [:actors] actors)
+            )
+        )
+          :response-format :json
+          :keywords? true
+        })
+
+      (let [states ["alabama" "alaska" "Virginia" "Georgia" "Texas"]]
+        (.typeahead (js/jQuery "#the-basics .typeahead") 
+            #js {:hint true :highlight true :minLength 1}
+            #js {:name "states" 
+                 :source (fn [input-str callback-fn] 
+                  (do
+                      (let [js-array (new js/Array)
+                            tolower #'clojure.string/lower-case
+                            actor-names (@app-state :actors)
+                            matching-states (filter #(gstring/contains (tolower (% :name)) (tolower input-str)) actor-names)
+                            ]
+                          (doall (map #(.push js-array (% :name)) matching-states))
+                          (callback-fn js-array)
+                        )
+                    )
+                 )
+                 }
+        )        
+      )
+    ))
+)

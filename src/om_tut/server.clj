@@ -19,6 +19,11 @@
 (defn search-actors [actor-name]
     (response (filter (fn [actor] (.contains (:name actor) actor-name) ) @actor-data)))
 
+;;DON'T FORGET TO REDUCE THE PAYLOAD
+(defn get-actors [request-map]
+    (response (map #(select-keys % [:name :id]) @actor-data))        
+        )
+
 (defn get-cast [movieId]
         (response
             (filter (fn [actor]
@@ -38,6 +43,7 @@
   (GET "/" request (wrap-json-response get-all-movies))
   (GET "/:year" [year] ((wrap-json-response get-movies-by-year) (str->int year)))
   (GET "/actorsearch/:name" [name] ((wrap-json-response search-actors) name) )
+  (GET "/actors/" request (wrap-json-response get-actors) )
   (GET "/cast/:movieId" [movieId] ((wrap-json-response get-cast) movieId) ))
 
 (def cors-enabled-routes
