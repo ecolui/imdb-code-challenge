@@ -1,4 +1,4 @@
-# om-tut
+# IMDB Code Challenge
 
 Code Challenge - Create a single page webapp to query IMDB for the top 100 movies for a certain year. The initial page should be a select form element with years 2000-2017. Once the year is selected, a list of the top 100 movies for that year should be displayed. The list should consist of links, which when clicked on, fetches the list of actors for that movie in a small panel on the page.
 
