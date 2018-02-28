@@ -23,6 +23,7 @@
       :welcome-msg "Welcome to the top movies of each year"
       :top-movies []
       :actors []
+      :selected-actor nil
     }))
 
 ;;number formatters
@@ -135,10 +136,7 @@
               (if (and (< (count (:top-movies @app-state)) 100) (not= (:selected-year @app-state) nil)) "visible" "hidden"))
             } 
             (str "Only " (count (:top-movies @app-state)) " movies were selected. For a movie to qualify in this list, it must have at least 10,000 votes."))
-          (dom/h3 nil
-            "The Bonus!"
-            (dom/div nil "hi world")
-            )  
+          (dom/h3 nil "Bonus Feature - Actor typeahead field")  
           (build-modal-componet)
           (build-actor-typeahead-component)
           ))))
@@ -155,34 +153,22 @@
   (fn [] 
     (do
       (ajax/GET (str api-server "/actors/") 
-        {:handler (fn [actors] 
-            (do
-            (.log js/console (first actors))
-            (swap! app-state assoc-in [:actors] actors)
-            )
-        )
+        {:handler (fn [actors] (swap! app-state assoc-in [:actors] actors))
           :response-format :json
           :keywords? true
         })
 
-      (let [states ["alabama" "alaska" "Virginia" "Georgia" "Texas"]]
-        (.typeahead (js/jQuery "#the-basics .typeahead") 
+      (.typeahead (js/jQuery "#the-basics .typeahead") 
             #js {:hint true :highlight true :minLength 1}
             #js {:name "states" 
-                 :source (fn [input-str callback-fn] 
-                  (do
-                      (let [js-array (new js/Array)
-                            tolower #'clojure.string/lower-case
-                            actor-names (@app-state :actors)
-                            matching-states (filter #(gstring/contains (tolower (% :name)) (tolower input-str)) actor-names)
-                            ]
-                          (doall (map #(.push js-array (% :name)) matching-states))
+                :source (fn [input-str callback-fn] 
+                    (let [js-array (new js/Array)
+                          tolower #'clojure.string/lower-case
+                          actor-names (@app-state :actors)
+                          matches (filter #(gstring/contains (tolower (% :name)) (tolower input-str)) actor-names)
+                          ]
+                          (doall (map #(.push js-array (% :name)) matches))
                           (callback-fn js-array)
-                        )
-                    )
-                 )
-                 }
-        )        
-      )
-    ))
-)
+                        ))
+                 })        
+    )))
